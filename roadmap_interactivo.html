@@ -132,13 +132,12 @@
         // Función auxiliar de UX para dar foco y seleccionar todo el texto de un elemento contenteditable
         function seleccionarTextoElemento(elemento) {
             elemento.focus();
-            // Ejecutamos la lógica de selección solo si el navegador la soporta
             if (window.getSelection && document.createRange) {
                 let rango = document.createRange();
-                rango.selectNodeContents(elemento); // Selecciona el contenido del nodo de texto
+                rango.selectNodeContents(elemento);
                 let seleccion = window.getSelection();
-                seleccion.removeAllRanges(); // Limpia cualquier otra selección activa en la pantalla
-                seleccion.addRange(rango); // Aplica el sombreado azul al texto actual
+                seleccion.removeAllRanges();
+                seleccion.addRange(rango);
             }
         }
 
@@ -148,8 +147,10 @@
             let nuevoNodo = generarEstructuraNodo("Nueva Rama Principal");
             raiz.appendChild(nuevoNodo);
             
-            // Pone el cursor y selecciona el texto por defecto
-            seleccionarTextoElemento(nuevoNodo.querySelector(".texto-editable"));
+            // Forzamos la edición inmediata al crear una nueva rama raíz
+            let texto = nuevoNodo.querySelector(".texto-editable");
+            texto.contentEditable = "true";
+            seleccionarTextoElemento(texto);
         }
 
         // Función Constructora Recursiva: Fabrica la misma estructura sin importar el nivel de profundidad
@@ -160,49 +161,72 @@
             // Creamos la barra de control del nodo
             let encabezado = document.createElement("div");
             encabezado.className = "nodo-encabezado";
+            encabezado.style.cursor = "pointer"; // Cambia el cursor a mano para indicar que toda la barra es clickeable
 
-            // Botón para colapsar / expandir sub-ramas
-            let btnToggle = document.createElement("button");
-            btnToggle.className = "btn-accion btn-toggle";
-            btnToggle.innerText = "📁";
-            btnToggle.onclick = function() {
-                let contenedorHijos = li.querySelector(".nodo-hijos");
-                if (contenedorHijos) {
-                    contenedorHijos.classList.toggle("oculto");
-                    btnToggle.innerText = contenedorHijos.classList.contains("oculto") ? "📁" : "📂";
+            // Icono visual del estado de la carpeta
+            let iconoCarpeta = document.createElement("span");
+            iconoCarpeta.innerText = "📁 ";
+
+            // Texto que por defecto NO es editable (para evitar falsos clicks)
+            let texto = document.createElement("span");
+            texto.className = "texto-editable";
+            texto.contentEditable = "false"; 
+            texto.innerText = textoInicial;
+            texto.style.cursor = "default";
+
+            // Detener la propagación en el texto para que al dar click ahí no se colapse la carpeta
+            texto.onclick = function(e) { e.stopPropagation(); };
+
+            // Al presionar Enter, salimos del modo edición
+            texto.onkeydown = function(e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    texto.blur();
                 }
             };
 
-            // Texto editable por el usuario
-            let texto = document.createElement("span");
-            texto.className = "texto-editable";
-            texto.contentEditable = "true";
-            texto.innerText = textoInicial;
+            // Al perder el foco, bloqueamos el texto otra vez
+            texto.onblur = function() {
+                texto.contentEditable = "false";
+            };
 
-            // Botón "+" para añadir un hijo (Recursividad en acción)
+            // Botón "✏️" para activar la edición (Detiene propagación para no colapsar la carpeta)
+            let btnEditar = document.createElement("button");
+            btnEditar.className = "btn-accion";
+            btnEditar.innerText = "✏️";
+            btnEditar.onclick = function(e) {
+                e.stopPropagation(); 
+                texto.contentEditable = "true";
+                seleccionarTextoElemento(texto);
+            };
+
+            // Botón "+" para añadir un hijo (Recursividad)
             let btnAgregarHijo = document.createElement("button");
             btnAgregarHijo.className = "btn-accion";
             btnAgregarHijo.style.color = "var(--accent-color)";
             btnAgregarHijo.innerText = "+";
-            btnAgregarHijo.onclick = function() {
-                let contenedorHijos = li.querySelector(".nodo-hijos");
-                // Forzamos a expandir si estaba oculto al añadir un hijo
-                contenedorHijos.classList.remove("oculto");
-                btnToggle.innerText = "📂";
+            btnAgregarHijo.onclick = function(e) {
+                e.stopPropagation(); // Evita que se cierre la carpeta actual al presionar el +
                 
-                // Llamada recursiva: genera otro nodo exactamente igual adentro de este
+                let contenedorHijos = li.querySelector(".nodo-hijos");
+                contenedorHijos.classList.remove("oculto");
+                iconoCarpeta.innerText = "📂 ";
+                
                 let subNodo = generarEstructuraNodo("Sub-elemento anidado");
                 contenedorHijos.appendChild(subNodo);
 
-                // TRUCO DE UX: Enfocamos y seleccionamos el texto del subnodo recién creado
-                seleccionarTextoElemento(subNodo.querySelector(".texto-editable"));
+                // Forzamos la edición automática del subnodo recién creado
+                let subTexto = subNodo.querySelector(".texto-editable");
+                subTexto.contentEditable = "true";
+                seleccionarTextoElemento(subTexto);
             };
 
-            // Botón "🗑️" para eliminar este nodo y todos sus descendientes
+            // Botón "🗑️" para eliminar este nodo y sus descendientes
             let btnEliminar = document.createElement("button");
             btnEliminar.className = "btn-accion";
             btnEliminar.innerText = "🗑️";
-            btnEliminar.onclick = function() {
+            btnEliminar.onclick = function(e) {
+                e.stopPropagation(); // Evita disparar el click del encabezado al borrar
                 li.remove();
             };
 
@@ -210,9 +234,18 @@
             let ulHijos = document.createElement("ul");
             ulHijos.className = "nodo-hijos";
 
+            // LOGICA PRINCIPAL: Toda la barra abre y cierra la carpeta
+            encabezado.onclick = function() {
+                if (ulHijos.children.length > 0) { // Solo si tiene hijos cambia el icono
+                    ulHijos.classList.toggle("oculto");
+                    iconoCarpeta.innerText = ulHijos.classList.contains("oculto") ? "📁 " : "📂 ";
+                }
+            };
+
             // Ensamblamos los componentes en el orden correcto
-            encabezado.appendChild(btnToggle);
+            encabezado.appendChild(iconoCarpeta);
             encabezado.appendChild(texto);
+            encabezado.appendChild(btnEditar);
             encabezado.appendChild(btnAgregarHijo);
             encabezado.appendChild(btnEliminar);
             
@@ -222,11 +255,10 @@
             return li;
         }
 
-        // PRE-CARGAR TUS RAMAS INICIALES PARA QUE NO EMPIECE VACÍO
+        // PRE-CARGAR TUS RAMAS INICIALES
         window.onload = function() {
             let raiz = document.getElementById("raiz-principal");
             
-            // Creamos tus tres pilares base usando la misma función
             let ramaAgenda = generarEstructuraNodo("📆 Agenda Personal");
             let ramaUanl = generarEstructuraNodo("🎓 Estudios UANL");
             let ramaLkq = generarEstructuraNodo("🚗 Operaciones LKQ");
