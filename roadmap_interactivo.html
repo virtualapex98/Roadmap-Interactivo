@@ -127,13 +127,16 @@
         </div>
     </div>
 
-    <!-- ================= LÓGICA RECURSIVA EN JAVASCRIPT ================= -->
+    <!-- ================= LÓGICA RECURSIVA EN JAVASCRIPT ================= -->  
     <script>
         // Función para crear una rama en el nivel de arriba (Raíz)
         function crearNodoRaiz() {
             let raiz = document.getElementById("raiz-principal");
             let nuevoNodo = generarEstructuraNodo("Nueva Rama Principal");
             raiz.appendChild(nuevoNodo);
+            
+            // Pone el cursor automáticamente en el texto de la nueva rama raíz
+            nuevoNodo.querySelector(".texto-editable").focus();
         }
 
         // Función Constructora Recursiva: Fabrica la misma estructura sin importar el nivel de profundidad
@@ -177,6 +180,9 @@
                 // Llamada recursiva: genera otro nodo exactamente igual adentro de este
                 let subNodo = generarEstructuraNodo("Sub-elemento anidado");
                 contenedorHijos.appendChild(subNodo);
+
+                // TRUCO DE UX: Buscamos el cuadro de texto del nuevo subnodo y le clavamos el cursor encima
+                subNodo.querySelector(".texto-editable").focus();
             };
 
             // Botón "🗑️" para eliminar este nodo y todos sus descendientes
