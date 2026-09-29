@@ -161,21 +161,19 @@
             // Creamos la barra de control del nodo
             let encabezado = document.createElement("div");
             encabezado.className = "nodo-encabezado";
-            encabezado.style.cursor = "pointer"; // Cambia el cursor a mano para indicar que toda la barra es clickeable
+            encabezado.style.cursor = "pointer"; // Toda la barra indica que es clickeable
 
             // Icono visual del estado de la carpeta
             let iconoCarpeta = document.createElement("span");
             iconoCarpeta.innerText = "📁 ";
+            iconoCarpeta.style.pointerEvents = "none"; // Evita que interfiera con el click de la barra
 
             // Texto que por defecto NO es editable (para evitar falsos clicks)
             let texto = document.createElement("span");
             texto.className = "texto-editable";
             texto.contentEditable = "false"; 
             texto.innerText = textoInicial;
-            texto.style.cursor = "default";
-
-            // Detener la propagación en el texto para que al dar click ahí no se colapse la carpeta
-            texto.onclick = function(e) { e.stopPropagation(); };
+            texto.style.cursor = "pointer"; // Cambiado a pointer para reflejar que el centro también es el botón
 
             // Al presionar Enter, salimos del modo edición
             texto.onkeydown = function(e) {
@@ -185,18 +183,20 @@
                 }
             };
 
-            // Al perder el foco, bloqueamos el texto otra vez
+            // Al perder el foco, bloqueamos el texto otra vez y devolvemos el cursor a tipo pointer
             texto.onblur = function() {
                 texto.contentEditable = "false";
+                texto.style.cursor = "pointer";
             };
 
-            // Botón "✏️" para activar la edición (Detiene propagación para no colapsar la carpeta)
+            // Botón "✏️" para activar la edición
             let btnEditar = document.createElement("button");
             btnEditar.className = "btn-accion";
             btnEditar.innerText = "✏️";
             btnEditar.onclick = function(e) {
-                e.stopPropagation(); 
+                e.stopPropagation(); // Aísla la acción del botón
                 texto.contentEditable = "true";
+                texto.style.cursor = "text"; // Cambia el cursor a modo texto solo al editar
                 seleccionarTextoElemento(texto);
             };
 
@@ -206,7 +206,7 @@
             btnAgregarHijo.style.color = "var(--accent-color)";
             btnAgregarHijo.innerText = "+";
             btnAgregarHijo.onclick = function(e) {
-                e.stopPropagation(); // Evita que se cierre la carpeta actual al presionar el +
+                e.stopPropagation(); // Aísla la acción del botón
                 
                 let contenedorHijos = li.querySelector(".nodo-hijos");
                 contenedorHijos.classList.remove("oculto");
@@ -218,6 +218,7 @@
                 // Forzamos la edición automática del subnodo recién creado
                 let subTexto = subNodo.querySelector(".texto-editable");
                 subTexto.contentEditable = "true";
+                subTexto.style.cursor = "text";
                 seleccionarTextoElemento(subTexto);
             };
 
@@ -226,7 +227,7 @@
             btnEliminar.className = "btn-accion";
             btnEliminar.innerText = "🗑️";
             btnEliminar.onclick = function(e) {
-                e.stopPropagation(); // Evita disparar el click del encabezado al borrar
+                e.stopPropagation(); // Aísla la acción del botón
                 li.remove();
             };
 
@@ -234,11 +235,14 @@
             let ulHijos = document.createElement("ul");
             ulHijos.className = "nodo-hijos";
 
-            // LOGICA PRINCIPAL: Toda la barra abre y cierra la carpeta
-            encabezado.onclick = function() {
-                if (ulHijos.children.length > 0) { // Solo si tiene hijos cambia el icono
-                    ulHijos.classList.toggle("oculto");
-                    iconoCarpeta.innerText = ulHijos.classList.contains("oculto") ? "📁 " : "📂 ";
+            // LÓGICA PRINCIPAL: Toda la barra (incluido el centro y el texto) abre y cierra la carpeta
+            encabezado.onclick = function(e) {
+                // Solo colapsa/expande si el texto NO está en modo edición activo
+                if (texto.contentEditable !== "true") {
+                    if (ulHijos.children.length > 0) {
+                        ulHijos.classList.toggle("oculto");
+                        iconoCarpeta.innerText = ulHijos.classList.contains("oculto") ? "📁 " : "📂 ";
+                    }
                 }
             };
 
