@@ -129,7 +129,7 @@
 
     <!-- ================= LÓGICA RECURSIVA EN JAVASCRIPT ================= -->  
      <script>
-        // Función auxiliar de UX para dar foco y seleccionar todo el texto de un elemento contenteditable
+        // Función auxiliar de UX para dar foco y seleccionar todo el texto editable
         function seleccionarTextoElemento(elemento) {
             elemento.focus();
             if (window.getSelection && document.createRange) {
@@ -144,114 +144,156 @@
         // Función para crear una rama en el nivel de arriba (Raíz)
         function crearNodoRaiz() {
             let raiz = document.getElementById("raiz-principal");
-            let nuevoNodo = generarEstructuraNodo("Nueva Rama Principal");
+            let tipo = prompt("¿Qué tipo de pilar deseas crear?\nEscribe: folder, nota o tarea").toLowerCase().trim();
+            if(tipo !== "folder" && tipo !== "nota" && tipo !== "tarea") tipo = "folder";
+            
+            let nuevoNodo = generarEstructuraNodo("Nueva Rama Principal", tipo);
             raiz.appendChild(nuevoNodo);
             
-            // Forzamos la edición inmediata al crear una nueva rama raíz
             let texto = nuevoNodo.querySelector(".texto-editable");
             texto.contentEditable = "true";
             seleccionarTextoElemento(texto);
         }
 
-        // Función Constructora Recursiva: Fabrica la misma estructura sin importar el nivel de profundidad
-        function generarEstructuraNodo(textoInicial) {
+        // Función Constructora Avanzada con Tipos de Datos y Control de Desborde
+        function generarEstructuraNodo(textoInicial, tipo) {
             let li = document.createElement("li");
             li.className = "nodo";
 
-            // Creamos la barra de control del nodo
             let encabezado = document.createElement("div");
             encabezado.className = "nodo-encabezado";
-            encabezado.style.cursor = "pointer"; // Toda la barra indica que es clickeable
+            encabezado.style.cursor = "pointer";
+            
+            // ESTILOS CRÍTICOS PARA EVITAR EL DESBORDE QUE SE VE EN TU IMAGEN:
+            encabezado.style.display = "flex";
+            encabezado.style.alignItems = "flex-start"; // Permite que crezca hacia abajo si hay mucho texto
+            encabezado.style.width = "100%";
+            encabezado.style.boxSizing = "border-box";
 
-            // Icono visual del estado de la carpeta
-            let iconoCarpeta = document.createElement("span");
-            iconoCarpeta.innerText = "📁 ";
-            iconoCarpeta.style.pointerEvents = "none"; // Evita que interfiera con el click de la barra
+            // Icono inicial según el tipo seleccionado
+            let iconoVisual = document.createElement("span");
+            iconoVisual.style.marginRight = "5px";
+            iconoVisual.style.flexShrink = "0"; // Evita que el icono se aplaste si el texto es gigante
+            
+            if (tipo === "folder") iconoVisual.innerText = "📁";
+            if (tipo === "nota") iconoVisual.innerText = "📝";
+            if (tipo === "tarea") iconoVisual.innerText = "🔲";
 
-            // Texto que por defecto NO es editable (para evitar falsos clicks)
+            // Contenedor de Texto con Auto-Ajuste de línea (Solución al desborde)
             let texto = document.createElement("span");
             texto.className = "texto-editable";
             texto.contentEditable = "false"; 
             texto.innerText = textoInicial;
-            texto.style.cursor = "pointer"; // Cambiado a pointer para reflejar que el centro también es el botón
+            
+            // Reglas CSS incrustadas para obligar al texto a dar el salto de línea dentro de la tarjeta
+            texto.style.flex = "1";
+            texto.style.wordBreak = "break-all"; // Rompe las hileras continuas de texto como "wwww"
+            texto.style.whiteSpace = "normal";   // Permite múltiples líneas
+            texto.style.paddingRight = "10px";
+
+            // Si es tipo tarea, permitimos simular el checkbox al dar clic al icono
+            if (tipo === "tarea") {
+                iconoVisual.style.cursor = "pointer";
+                iconoVisual.onclick = function(e) {
+                    e.stopPropagation();
+                    if(iconoVisual.innerText === "🔲") {
+                        iconoVisual.innerText = "✅";
+                        texto.style.textDecoration = "line-through";
+                        texto.style.color = "#8b949e";
+                    } else {
+                        iconoVisual.innerText = "🔲";
+                        texto.style.textDecoration = "none";
+                        texto.style.color = "var(--text-color)";
+                    }
+                }
+            }
 
             // Al presionar Enter, salimos del modo edición
             texto.onkeydown = function(e) {
                 if (e.key === "Enter") {
-                    e.preventDefault();
-                    texto.blur();
+                    if (tipo !== "nota") { // En las notas sí permitimos saltos de línea con Enter
+                        e.preventDefault();
+                        texto.blur();
+                    }
                 }
             };
 
-            // Al perder el foco, bloqueamos el texto otra vez y devolvemos el cursor a tipo pointer
             texto.onblur = function() {
                 texto.contentEditable = "false";
-                texto.style.cursor = "pointer";
             };
 
-            // Botón "✏️" para activar la edición
+            // Botonera de Acciones agrupada para que no se mueva de su lugar
+            let accionesContenedor = document.createElement("div");
+            accionesContenedor.style.display = "flex";
+            accionesContenedor.style.flexShrink = "0"; // Mantiene los botones alineados a la derecha siempre
+
+            // Botón "✏️" Editar
             let btnEditar = document.createElement("button");
             btnEditar.className = "btn-accion";
             btnEditar.innerText = "✏️";
             btnEditar.onclick = function(e) {
-                e.stopPropagation(); // Aísla la acción del botón
+                e.stopPropagation(); 
                 texto.contentEditable = "true";
-                texto.style.cursor = "text"; // Cambia el cursor a modo texto solo al editar
                 seleccionarTextoElemento(texto);
             };
 
-            // Botón "+" para añadir un hijo (Recursividad)
+            // Botón "+" Añadir sub-elemento (Pregunta qué tipo de dato anidar)
             let btnAgregarHijo = document.createElement("button");
             btnAgregarHijo.className = "btn-accion";
             btnAgregarHijo.style.color = "var(--accent-color)";
             btnAgregarHijo.innerText = "+";
             btnAgregarHijo.onclick = function(e) {
-                e.stopPropagation(); // Aísla la acción del botón
+                e.stopPropagation();
                 
+                let tipoHijo = prompt("¿Qué deseas anidar aquí?\nEscribe: folder, nota o tarea").toLowerCase().trim();
+                if(tipoHijo !== "folder" && tipoHijo !== "nota" && tipoHijo !== "tarea") return;
+
                 let contenedorHijos = li.querySelector(".nodo-hijos");
                 contenedorHijos.classList.remove("oculto");
-                iconoCarpeta.innerText = "📂 ";
+                if (tipo === "folder") iconoVisual.innerText = "📂";
                 
-                let subNodo = generarEstructuraNodo("Sub-elemento anidado");
+                let textoPorDefecto = "Nuevo " + tipoHijo;
+                if(tipoHijo === "nota") textoPorDefecto = "Escribe aquí una descripción larga o nota detallada...";
+                
+                let subNodo = generarEstructuraNodo(textoPorDefecto, tipoHijo);
                 contenedorHijos.appendChild(subNodo);
 
-                // Forzamos la edición automática del subnodo recién creado
                 let subTexto = subNodo.querySelector(".texto-editable");
                 subTexto.contentEditable = "true";
-                subTexto.style.cursor = "text";
                 seleccionarTextoElemento(subTexto);
             };
 
-            // Botón "🗑️" para eliminar este nodo y sus descendientes
+            // Botón "🗑️" Eliminar
             let btnEliminar = document.createElement("button");
             btnEliminar.className = "btn-accion";
             btnEliminar.innerText = "🗑️";
             btnEliminar.onclick = function(e) {
-                e.stopPropagation(); // Aísla la acción del botón
+                e.stopPropagation(); 
                 li.remove();
             };
 
-            // Contenedor para los futuros hijos de este nodo
+            // Contenedor de Hijos
             let ulHijos = document.createElement("ul");
             ulHijos.className = "nodo-hijos";
 
-            // LÓGICA PRINCIPAL: Toda la barra (incluido el centro y el texto) abre y cierra la carpeta
-            encabezado.onclick = function(e) {
-                // Solo colapsa/expande si el texto NO está en modo edición activo
-                if (texto.contentEditable !== "true") {
+            // Lógica de apertura/cierre (Solo aplica si el nodo es un folder)
+            encabezado.onclick = function() {
+                if (tipo === "folder" && texto.contentEditable !== "true") {
                     if (ulHijos.children.length > 0) {
                         ulHijos.classList.toggle("oculto");
-                        iconoCarpeta.innerText = ulHijos.classList.contains("oculto") ? "📁 " : "📂 ";
+                        iconoVisual.innerText = ulHijos.classList.contains("oculto") ? "📁" : "📂";
                     }
                 }
             };
 
-            // Ensamblamos los componentes en el orden correcto
-            encabezado.appendChild(iconoCarpeta);
+            // Ensamblado modular
+            encabezado.appendChild(iconoVisual);
             encabezado.appendChild(texto);
-            encabezado.appendChild(btnEditar);
-            encabezado.appendChild(btnAgregarHijo);
-            encabezado.appendChild(btnEliminar);
+            
+            accionesContenedor.appendChild(btnEditar);
+            accionesContenedor.appendChild(btnAgregarHijo);
+            accionesContenedor.appendChild(btnEliminar);
+            encabezado.appendChild(accionesContenedor);
             
             li.appendChild(encabezado);
             li.appendChild(ulHijos);
@@ -259,13 +301,13 @@
             return li;
         }
 
-        // PRE-CARGAR TUS RAMAS INICIALES
+        // PRE-CARGA INICIAL DEL DASHBOARD EN TU NAVEGADOR
         window.onload = function() {
             let raiz = document.getElementById("raiz-principal");
             
-            let ramaAgenda = generarEstructuraNodo("📆 Agenda Personal");
-            let ramaUanl = generarEstructuraNodo("🎓 Estudios UANL");
-            let ramaLkq = generarEstructuraNodo("🚗 Operaciones LKQ");
+            let ramaAgenda = generarEstructuraNodo("📆 Agenda Personal", "folder");
+            let ramaUanl = generarEstructuraNodo("🎓 Estudios UANL", "folder");
+            let ramaLkq = generarEstructuraNodo("🚗 Operaciones LKQ", "folder");
 
             raiz.appendChild(ramaAgenda);
             raiz.appendChild(ramaUanl);
