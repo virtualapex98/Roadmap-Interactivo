@@ -128,15 +128,28 @@
     </div>
 
     <!-- ================= LÓGICA RECURSIVA EN JAVASCRIPT ================= -->  
-    <script>
+     <script>
+        // Función auxiliar de UX para dar foco y seleccionar todo el texto de un elemento contenteditable
+        function seleccionarTextoElemento(elemento) {
+            elemento.focus();
+            // Ejecutamos la lógica de selección solo si el navegador la soporta
+            if (window.getSelection && document.createRange) {
+                let rango = document.createRange();
+                rango.selectNodeContents(elemento); // Selecciona el contenido del nodo de texto
+                let seleccion = window.getSelection();
+                seleccion.removeAllRanges(); // Limpia cualquier otra selección activa en la pantalla
+                seleccion.addRange(rango); // Aplica el sombreado azul al texto actual
+            }
+        }
+
         // Función para crear una rama en el nivel de arriba (Raíz)
         function crearNodoRaiz() {
             let raiz = document.getElementById("raiz-principal");
             let nuevoNodo = generarEstructuraNodo("Nueva Rama Principal");
             raiz.appendChild(nuevoNodo);
             
-            // Pone el cursor automáticamente en el texto de la nueva rama raíz
-            nuevoNodo.querySelector(".texto-editable").focus();
+            // Pone el cursor y selecciona el texto por defecto
+            seleccionarTextoElemento(nuevoNodo.querySelector(".texto-editable"));
         }
 
         // Función Constructora Recursiva: Fabrica la misma estructura sin importar el nivel de profundidad
@@ -181,8 +194,8 @@
                 let subNodo = generarEstructuraNodo("Sub-elemento anidado");
                 contenedorHijos.appendChild(subNodo);
 
-                // TRUCO DE UX: Buscamos el cuadro de texto del nuevo subnodo y le clavamos el cursor encima
-                subNodo.querySelector(".texto-editable").focus();
+                // TRUCO DE UX: Enfocamos y seleccionamos el texto del subnodo recién creado
+                seleccionarTextoElemento(subNodo.querySelector(".texto-editable"));
             };
 
             // Botón "🗑️" para eliminar este nodo y todos sus descendientes
