@@ -35,12 +35,54 @@
             text-align: center;
         }
 
+        /* CONTROLES PARA AGREGAR CONTENIDO (BOTÓN +) */
+        .creador-contenedor {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .creador-contenedor input {
+            flex: 1;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .creador-contenedor input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .btn-mas {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn-mas:hover {
+            background-color: #2ea44f;
+        }
+
         /* DISEÑO DE LA PANTALLA DE INICIO (PANELES) */
         .grid-paneles {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
-            margin-top: 30px;
+            margin-top: 10px;
         }
 
         .panel-boton {
@@ -71,7 +113,7 @@
             color: #8b949e;
         }
 
-        /* SECCIONES DE ROADMAPS (OCULTAS POR DEFECTO) */
+        /* SECCIONES DE ROADMAPS COMPLETOS */
         .seccion-roadmap {
             display: none;
             background-color: var(--card-bg);
@@ -79,6 +121,13 @@
             border-radius: 8px;
             padding: 25px;
             margin-top: 20px;
+        }
+
+        .header-roadmap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         .btn-regresar {
@@ -89,12 +138,10 @@
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            transition: background-color 0.2s;
         }
 
         .btn-regresar:hover {
             background-color: #21262d;
-            border-color: #8b949e;
         }
 
         /* LISTAS DE TAREAS INTERACTIVAS */
@@ -102,11 +149,6 @@
             margin-top: 20px;
             border-left: 3px solid var(--accent-color);
             padding-left: 15px;
-        }
-
-        .fase h4 {
-            color: #ffffff;
-            margin-bottom: 10px;
         }
 
         ul {
@@ -138,9 +180,8 @@
         .recurso-link {
             color: var(--accent-color);
             text-decoration: none;
-            font-weight: bold;
         }
-
+        
         .recurso-link:hover {
             text-decoration: underline;
         }
@@ -150,80 +191,165 @@
 
     <div class="container">
         <h1>🏁 Panel de Objetivos</h1>
-        <p style="text-align: center; color: #8b949e;">Selecciona una categoría para gestionar tus ramas de desarrollo.</p>
-
+        
         <!-- ================= PANTALLA 1: MENÚ PRINCIPAL ================= -->
-        <div id="panel-inicio" class="grid-paneles">
-            <div class="panel-boton" onclick="navegarA('roadmap-agenda')">
-                <h3>📆 Agenda Personal</h3>
-                <p>Gestión del tiempo libre y reducción de burnout.</p>
+        <div id="pantalla-principal">
+            <!-- Creador de Categorías Nuevas -->
+            <div class="creador-contenedor">
+                <input type="text" id="inputNuevaCategoria" placeholder="Nueva categoría (ej. 🛠️ Telemetría, 🐍 Automatización)...">
+                <button class="btn-mas" onclick="agregarCategoria()">+</button>
             </div>
-            <div class="panel-boton" onclick="navegarA('roadmap-uanl')">
-                <h3>🎓 Estudios UANL</h3>
-                <p>Proyectos de C++ (FCFM) y Mecánica (FIME).</p>
-            </div>
-            <div class="panel-boton" onclick="navegarA('roadmap-lkq')">
-                <h3>🚗 Operaciones LKQ</h3>
-                <p>Estrategia de escape de llamadas y bases de datos.</p>
+
+            <div id="panel-inicio" class="grid-paneles">
+                <div class="panel-boton" onclick="navegarA('roadmap-agenda')">
+                    <h3>📆 Agenda Personal</h3>
+                    <p>Gestión del tiempo libre y reducción de burnout.</p>
+                </div>
+                <div class="panel-boton" onclick="navegarA('roadmap-uanl')">
+                    <h3>🎓 Estudios UANL</h3>
+                    <p>Proyectos de C++ (FCFM) y Mecánica (FIME).</p>
+                </div>
+                <div class="panel-boton" onclick="navegarA('roadmap-lkq')">
+                    <h3>🚗 Operaciones LKQ</h3>
+                    <p>Estrategia de escape de llamadas y bases de datos.</p>
+                </div>
             </div>
         </div>
 
-        <!-- ================= PANTALLA 2: ROADMAP AGENDA ================= -->
-        <div id="roadmap-agenda" class="seccion-roadmap">
-            <button class="btn-regresar" onclick="volverAlPanel('roadmap-agenda')">⬅️ Volver al Panel</button>
-            <h2>📆 Agenda Personal</h2>
-            <div class="fase">
-                <h4>Fase 1: Balance de Energía</h4>
-                <ul>
-                    <li><input type="checkbox"> <span>Bloquear 4 horas semanales exclusivas para desarrollo personal.</span></li>
-                    <li><input type="checkbox"> <span>Documentar proyectos académicos como portafolio profesional.</span></li>
-                </ul>
+        <!-- CONTENEDOR DONDE SE INYECTARÁN LAS NUEVAS PANTALLAS DINÁMICAS -->
+        <div id="contenedor-roadmaps-dinamicos">
+            
+            <!-- Roadmap Agenda -->
+            <div id="roadmap-agenda" class="seccion-roadmap">
+                <div class="header-roadmap">
+                    <button class="btn-regresar" onclick="volverAlPanel('roadmap-agenda')">⬅️ Volver</button>
+                    <h2>📆 Agenda Personal</h2>
+                </div>
+                <div class="creador-contenedor">
+                    <input type="text" id="input-item-agenda" placeholder="Agregar elemento a esta lista...">
+                    <button class="btn-mas" onclick="agregarElementoLista('lista-agenda', 'input-item-agenda')">+</button>
+                </div>
+                <div class="fase">
+                    <ul id="lista-agenda">
+                        <li><input type="checkbox"> <span>Bloquear 4 horas semanales exclusivas para desarrollo personal.</span></li>
+                        <li><input type="checkbox"> <span>Documentar proyectos académicos como portafolio profesional.</span></li>
+                    </ul>
+                </div>
             </div>
-        </div>
 
-        <!-- ================= PANTALLA 2: ROADMAP UANL ================= -->
-        <div id="roadmap-uanl" class="seccion-roadmap">
-            <button class="btn-regresar" onclick="volverAlPanel('roadmap-uanl')">⬅️ Volver al Panel</button>
-            <h2>🎓 Estudios UANL (Multimedia + Mecánica)</h2>
-            <div class="fase">
-                <h4>Fase 1: Aplicación Práctica de C++</h4>
-                <ul>
-                    <li><input type="checkbox"> <span>Dominar Programación Orientada a Objetos (POO) usando lógica automotriz.</span></li>
-                    <li><input type="checkbox"> <span>Diseñar un algoritmo en C++ enfocado en cálculos de tren motriz (ej. relaciones de transmisión).</span></li>
-                </ul>
+            <!-- Roadmap UANL -->
+            <div id="roadmap-uanl" class="seccion-roadmap">
+                <div class="header-roadmap">
+                    <button class="btn-regresar" onclick="volverAlPanel('roadmap-uanl')">⬅️ Volver</button>
+                    <h2>🎓 Estudios UANL</h2>
+                </div>
+                <div class="creador-contenedor">
+                    <input type="text" id="input-item-uanl" placeholder="Agregar elemento a esta lista...">
+                    <button class="btn-mas" onclick="agregarElementoLista('lista-uanl', 'input-item-uanl')">+</button>
+                </div>
+                <div class="fase">
+                    <ul id="lista-uanl">
+                        <li><input type="checkbox"> <span>Dominar Programación Orientada a Objetos (POO) usando lógica automotriz.</span></li>
+                        <li><input type="checkbox"> <span>Diseñar un algoritmo en C++ enfocado en cálculos de tren motriz.</span></li>
+                    </ul>
+                </div>
             </div>
-        </div>
 
-        <!-- ================= PANTALLA 2: ROADMAP LKQ ================= -->
-        <div id="roadmap-lkq" class="seccion-roadmap">
-            <button class="btn-regresar" onclick="volverAlPanel('roadmap-lkq')">⬅️ Volver al Panel</button>
-            <h2>🚗 Operaciones LKQ & Análisis de Datos</h2>
-            <div class="fase">
-                <h4>Fase 1: Corto Plazo (Ruta SQL)</h4>
-                <ul>
-                    <li><input type="checkbox"> <span>Aprender comandos básicos de SQL (SELECT, WHERE, JOIN) usando el curso interactivo gratuito de <a href="https://selectstarsql.com" target="_blank" class="recurso-link">SelectStarSQL</a>.</span></li>
-                    <li><input type="checkbox"> <span>Completar la introducción a bases de datos en <a href="https://kaggle.com" target="_blank" class="recurso-link">Kaggle SQL Courses</a> para conectar la lógica de C++ con datos de inventarios.</span></li>
-                    <li><input type="checkbox"> <span>Identificar internamente en LKQ el nombre del software o bases de datos de catálogo que maneja el soporte de garantías.</span></li>
-                </ul>
+            <!-- Roadmap LKQ -->
+            <div id="roadmap-lkq" class="seccion-roadmap">
+                <div class="header-roadmap">
+                    <button class="btn-regresar" onclick="volverAlPanel('roadmap-lkq')">⬅️ Volver</button>
+                    <h2>🚗 Operaciones LKQ & Datos</h2>
+                </div>
+                <div class="creador-contenedor">
+                    <input type="text" id="input-item-lkq" placeholder="Agregar elemento a esta lista...">
+                    <button class="btn-mas" onclick="agregarElementoLista('lista-lkq', 'input-item-lkq')">+</button>
+                </div>
+                <div class="fase">
+                    <ul id="lista-lkq">
+                        <li><input type="checkbox"> <span>Aprender comandos de SQL usando <a href="https://selectstarsql.com" target="_blank" class="recurso-link">SelectStarSQL</a>.</span></li>
+                        <li><input type="checkbox"> <span>Completar la introducción a bases de datos en <a href="https://kaggle.com" target="_blank" class="recurso-link">Kaggle SQL</a>.</span></li>
+                    </ul>
+                </div>
             </div>
+
         </div>
     </div>
 
-    <!-- ================= SCRIPT DE NAVEGACIÓN (JAVASCRIPT) ================= -->
+  
+    <!-- ================= LÓGICA EN JAVASCRIPT ================= -->
     <script>
+        // 1. Funciones de Navegación entre Pantallas
         function navegarA(pantallaId) {
-            // Oculta el panel principal
-            document.getElementById('panel-inicio').style.display = 'none';
-            // Muestra el roadmap seleccionado
+            document.getElementById('pantalla-principal').style.display = 'none';
             document.getElementById(pantallaId).style.display = 'block';
             window.scrollTo(0, 0);
         }
 
         function volverAlPanel(pantallaId) {
-            // Oculta el roadmap activo
             document.getElementById(pantallaId).style.display = 'none';
-            // Vuelve a encender el menú principal
-            document.getElementById('panel-inicio').style.display = 'grid';
+            document.getElementById('pantalla-principal').style.display = 'block';
+        }
+
+        // 2. Función para agregar elementos individuales (li) a las listas
+        function agregarElementoLista(listaId, inputId) {
+            let input = document.getElementById(inputId);
+            let texto = input.value.trim();
+            if (texto === "") return; 
+
+            let lista = document.getElementById(listaId);
+            let nuevoLi = document.createElement("li");
+            nuevoLi.innerHTML = `<input type="checkbox"> <span>${texto}</span>`;
+            
+            lista.appendChild(nuevoLi);
+            input.value = ""; 
+        }
+
+        // 3. Función avanzada para generar Categorías Dinámicas Completas
+        function agregarCategoria() {
+            let inputCat = document.getElementById("inputNuevaCategoria");
+            let nombreCat = inputCat.value.trim();
+            if (nombreCat === "") return;
+
+            let idUnico = "roadmap-" + nombreCat.replace(/\s+/g, '-').toLowerCase();
+            let idListaUnica = "lista-" + idUnico;
+            let idInputUnico = "input-" + idUnico;
+
+            // PARTE A: Crear tarjeta en interfaz principal
+            let panelInicio = document.getElementById("panel-inicio");
+            let nuevoBoton = document.createElement("div");
+            nuevoBoton.className = "panel-boton";
+            nuevoBoton.onclick = function() { navegarA(idUnico); }; 
+            nuevoBoton.innerHTML = `
+                <h3>${nombreCat}</h3>
+                <p>Categoría personalizada agregada por ti.</p>
+            `;
+            panelInicio.appendChild(nuevoBoton);
+
+            // PARTE B: Crear la estructura de la nueva pantalla
+            let contenedorRoadmaps = document.getElementById("contenedor-roadmaps-dinamicos");
+            let nuevaSeccion = document.createElement("div");
+            nuevaSeccion.id = idUnico;
+            nuevaSeccion.className = "seccion-roadmap";
+            
+            nuevaSeccion.innerHTML = `
+                <div class="header-roadmap">
+                    <button class="btn-regresar" onclick="volverAlPanel('${idUnico}')">⬅️ Volver</button>
+                    <h2>${nombreCat}</h2>
+                </div>
+                <div class="creador-contenedor">
+                    <input type="text" id="${idInputUnico}" placeholder="Agregar elemento a esta lista...">
+                    <button class="btn-mas" onclick="agregarElementoLista('${idListaUnica}', '${idInputUnico}')">+</button>
+                </div>
+                <div class="fase">
+                    <ul id="${idListaUnica}">
+                        <li><input type="checkbox"> <span>¡Primera tarea de tu nueva rama!</span></li>
+                    </ul>
+                </div>
+            `;
+            contenedorRoadmaps.appendChild(nuevaSeccion);
+
+            inputCat.value = "";
         }
     </script>
 </body>
