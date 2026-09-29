@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roadmap Interactivo - Perfil Híbrido Automotriz</title>
+    <title>Dashboard de Crecimiento Profesional</title>
     <style>
         :root {
             --bg-color: #0d1117;
             --card-bg: #161b22;
-            --text-color: #c9d1d9;
-            --text-bright: #f0f6fc;
-            --accent-blue: #58a6ff;
-            --accent-green: #3fb950;
-            --accent-purple: #bc8cff;
             --border-color: #30363d;
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --success-color: #238636;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
@@ -25,262 +24,206 @@
             flex-direction: column;
             align-items: center;
         }
-        header {
-            text-align: center;
-            margin-bottom: 30px;
+
+        .container {
+            width: 100%;
             max-width: 800px;
         }
-        h1 { color: var(--text-bright); margin-bottom: 10px; }
-        p { color: #8b949e; font-size: 1.1em; line-height: 1.5; }
-        
-        .container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
+
+        h1, h2 {
+            color: #ffffff;
+            text-align: center;
         }
-        
-        .phase-card {
+
+        /* DISEÑO DE LA PANTALLA DE INICIO (PANELES) */
+        .grid-paneles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .panel-boton {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: transform 0.2s, border-color 0.2s;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
         }
-        .phase-card:hover {
+
+        .panel-boton:hover {
             transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.15);
+        }
+
+        .panel-boton h3 {
+            margin: 0 0 10px 0;
+            color: var(--accent-color);
+            font-size: 1.4rem;
+        }
+
+        .panel-boton p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #8b949e;
+        }
+
+        /* SECCIONES DE ROADMAPS (OCULTAS POR DEFECTO) */
+        .seccion-roadmap {
+            display: none;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .btn-regresar {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        .btn-regresar:hover {
+            background-color: #21262d;
             border-color: #8b949e;
         }
-        
-        .phase-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+
+        /* LISTAS DE TAREAS INTERACTIVAS */
+        .fase {
+            margin-top: 20px;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 15px;
         }
-        .phase-1 .phase-title { color: var(--accent-blue); }
-        .phase-2 .phase-title { color: var(--accent-green); }
-        .phase-3 .phase-title { color: var(--accent-purple); }
-        
-        .task-list {
+
+        .fase h4 {
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        ul {
             list-style: none;
             padding: 0;
-            margin: 0;
         }
-        .task-item {
-            background: #21262d;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .task-item:hover {
-            background: #30363d;
-        }
-        .task-header {
+
+        li {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 6px;
-            color: var(--text-bright);
+            align-items: flex-start;
+            margin-bottom: 12px;
+            background: #0d1117;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
         }
-        .checkbox {
-            width: 18px;
-            height: 18px;
-            border: 2px solid #8b949e;
-            border-radius: 4px;
-            display: inline-block;
-            position: relative;
-            transition: background 0.2s, border-color 0.2s;
+
+        li input[type="checkbox"] {
+            margin-right: 12px;
+            margin-top: 3px;
+            cursor: pointer;
         }
-        .task-item.completed .checkbox {
-            background-color: var(--accent-green);
-            border-color: var(--accent-green);
-        }
-        .task-item.completed .checkbox::after {
-            content: '✓';
-            color: white;
-            position: absolute;
-            font-size: 12px;
-            top: -2px;
-            left: 3px;
-        }
-        .task-item.completed .task-title {
+
+        li input[type="checkbox"]:checked + span {
             text-decoration: line-through;
             color: #8b949e;
         }
-        
-        .details-pane {
-            margin-top: 10px;
-            font-size: 0.9em;
-            color: #8b949e;
-            line-height: 1.4;
-            display: none;
-            border-top: 1px solid var(--border-color);
-            padding-top: 8px;
+
+        .recurso-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: bold;
         }
-        .task-item.active .details-pane {
-            display: block;
+
+        .recurso-link:hover {
+            text-decoration: underline;
         }
-        
-        .questions-box {
-            grid-column: 1 / -1;
-            background: #1f1b2c;
-            border: 1px solid #482e75;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-            max-width: 1200px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-        .questions-box h3 { color: var(--accent-purple); margin-top: 0; }
-        .questions-box ul { padding-left: 20px; }
-        .questions-box li { margin-bottom: 10px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🏎️ Mi Roadmap Híbrido Automotriz</h1>
-        <p>Una guía interactiva y expandible para conectar FCFM, FIME y LKQ. Diseñada para automatizar tareas, dominar C++ y dar el salto hacia el análisis internacional sin caer en el burnout.</p>
-    </header>
-
     <div class="container">
-        <!-- FASE 1 -->
-        <div class="phase-card phase-1">
-            <div class="phase-title">🚀 Corto Plazo (Mes 1-6)</div>
-            <p style="font-size:0.9em; color:#8b949e; margin-top:-10px; margin-bottom:15px;">Objetivo: Automatización interna y escape de llamadas repetitivas.</p>
-            <ul class="task-list">
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">C++ Orientado a Autos</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Usa tus tareas de FCFM para programar lógica automotriz (ej. simular el cálculo de inyección de una ECU o relaciones de transmisión del tren motriz).<br><br>
-                        <strong>Herramientas:</strong> Clases, objetos y estructuras de control en C++.
-                    </div>
-                </li>
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">SQL y Puentes de Datos</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Dedica un fin de semana a aprender comandos básicos de SQL (SELECT, JOIN). Te servirá para levantar la mano en LKQ y migrar al área de inventarios o catálogo corporativo.
-                    </div>
-                </li>
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">Diagnóstico Automotriz (FIME)</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Enfócate en aprender redes de comunicación vehicular (CAN Bus y multiplexado) en tu curso de FIME. Esto conecta directamente el hardware del auto con la informática.
-                    </div>
-                </li>
-            </ul>
+        <h1>🏁 Panel de Objetivos</h1>
+        <p style="text-align: center; color: #8b949e;">Selecciona una categoría para gestionar tus ramas de desarrollo.</p>
+
+        <!-- ================= PANTALLA 1: MENÚ PRINCIPAL ================= -->
+        <div id="panel-inicio" class="grid-paneles">
+            <div class="panel-boton" onclick="navegarA('roadmap-agenda')">
+                <h3>📆 Agenda Personal</h3>
+                <p>Gestión del tiempo libre y reducción de burnout.</p>
+            </div>
+            <div class="panel-boton" onclick="navegarA('roadmap-uanl')">
+                <h3>🎓 Estudios UANL</h3>
+                <p>Proyectos de C++ (FCFM) y Mecánica (FIME).</p>
+            </div>
+            <div class="panel-boton" onclick="navegarA('roadmap-lkq')">
+                <h3>🚗 Operaciones LKQ</h3>
+                <p>Estrategia de escape de llamadas y bases de datos.</p>
+            </div>
         </div>
 
-        <!-- FASE 2 -->
-        <div class="phase-card phase-2">
-            <div class="phase-title">🛠️ Mediano Plazo (Mes 6-18)</div>
-            <p style="font-size:0.9em; color:#8b949e; margin-top:-10px; margin-bottom:15px;">Objetivo: Construcción de portafolio técnico y fusión multimedia-mecánica.</p>
-            <ul class="task-list">
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">Modelado y Render 3D Técnico</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Usa tus bases de animación de FCFM para aprender Blender o SolidWorks (estándar en FIME). Modela y anima piezas del tren motriz bajo estrés físico.
-                    </div>
-                </li>
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">Análisis en Power BI</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Crea tableros interactivos simulando bases de datos de garantías o fallas de refacciones de LKQ. Demuestra que sabes transformar datos en decisiones de negocio.
-                    </div>
-                </li>
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">Scripting con Python</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Domina Python para procesamiento rápido de datos y automatización de archivos. Es el lenguaje ideal complementario a tu lógica estructurada de C++.
-                    </div>
-                </li>
-            </ul>
+        <!-- ================= PANTALLA 2: ROADMAP AGENDA ================= -->
+        <div id="roadmap-agenda" class="seccion-roadmap">
+            <button class="btn-regresar" onclick="volverAlPanel('roadmap-agenda')">⬅️ Volver al Panel</button>
+            <h2>📆 Agenda Personal</h2>
+            <div class="fase">
+                <h4>Fase 1: Balance de Energía</h4>
+                <ul>
+                    <li><input type="checkbox"> <span>Bloquear 4 horas semanales exclusivas para desarrollo personal.</span></li>
+                    <li><input type="checkbox"> <span>Documentar proyectos académicos como portafolio profesional.</span></li>
+                </ul>
+            </div>
         </div>
 
-        <!-- FASE 3 -->
-        <div class="phase-card phase-3">
-            <div class="phase-title">🏁 Largo Plazo (Mes 18-36)</div>
-            <p style="font-size:0.9em; color:#8b949e; margin-top:-10px; margin-bottom:15px;">Objetivo: Preparación para vacantes internacionales y visas de trabajo.</p>
-            <ul class="task-list">
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">Sistemas Embebidos Avanzados</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Programa microcontroladores usando C++ (entorno Arduino/STMicroelectronics) para simular lectura de sensores reales de un motor.
-                    </div>
-                </li>
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">Desarrollo HMI / Motores Gráficos</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Explora Unreal Engine o Unity usando C++. Las interfaces de pantallas de autos modernos y los simuladores de carreras se construyen cruzando gráficos con código rápido.
-                    </div>
-                </li>
-                <li class="task-item" onclick="toggleTask(this, event)">
-                    <div class="task-header">
-                        <span class="task-title">Estrategia de Visa (TN / L-1)</span>
-                        <div class="checkbox" onclick="toggleCheck(this, event)"></div>
-                    </div>
-                    <div class="details-pane">
-                        <strong>Estrategia:</strong> Consolida tu portafolio digital (GitHub/Behance) mostrando tus animaciones de motores controladas por C++. Busca el patrocinio de LKQ EUA mediante transferencia o aplica como Diseñador Multimedia vía Visa TN.
-                    </div>
-                </li>
-            </ul>
+        <!-- ================= PANTALLA 2: ROADMAP UANL ================= -->
+        <div id="roadmap-uanl" class="seccion-roadmap">
+            <button class="btn-regresar" onclick="volverAlPanel('roadmap-uanl')">⬅️ Volver al Panel</button>
+            <h2>🎓 Estudios UANL (Multimedia + Mecánica)</h2>
+            <div class="fase">
+                <h4>Fase 1: Aplicación Práctica de C++</h4>
+                <ul>
+                    <li><input type="checkbox"> <span>Dominar Programación Orientada a Objetos (POO) usando lógica automotriz.</span></li>
+                    <li><input type="checkbox"> <span>Diseñar un algoritmo en C++ enfocado en cálculos de tren motriz (ej. relaciones de transmisión).</span></li>
+                </ul>
+            </div>
         </div>
 
-        <!-- PREGUNTAS DE SEGUIMIENTO -->
-        <div class="questions-box">
-            <h3>📌 Preguntas de Control para tu Bitácora</h3>
-            <p style="color: #c9d1d9; font-size: 0.95em; margin-bottom: 10px;">Conserva estas preguntas integradas en tu roadmap para cuando llegue el momento de ejecutarlas en la facultad:</p>
-            <ul>
-                <li><strong>¿Qué proyecto final o tema fuerte te están pidiendo actualmente en tu clase de C++?</strong> (Úsalo como pretexto para diseñar un algoritmo que resuelva la física de un componente de tren motriz).</li>
-                <li><strong>¿Te gustaría una recomendación de un recurso en línea gratuito y enfocado a SQL práctico</strong> para acelerar tu transición fuera del área de llamadas en LKQ?</li>
-            </ul>
+        <!-- ================= PANTALLA 2: ROADMAP LKQ ================= -->
+        <div id="roadmap-lkq" class="seccion-roadmap">
+            <button class="btn-regresar" onclick="volverAlPanel('roadmap-lkq')">⬅️ Volver al Panel</button>
+            <h2>🚗 Operaciones LKQ & Análisis de Datos</h2>
+            <div class="fase">
+                <h4>Fase 1: Corto Plazo (Ruta SQL)</h4>
+                <ul>
+                    <li><input type="checkbox"> <span>Aprender comandos básicos de SQL (SELECT, WHERE, JOIN) usando el curso interactivo gratuito de <a href="https://selectstarsql.com" target="_blank" class="recurso-link">SelectStarSQL</a>.</span></li>
+                    <li><input type="checkbox"> <span>Completar la introducción a bases de datos en <a href="https://kaggle.com" target="_blank" class="recurso-link">Kaggle SQL Courses</a> para conectar la lógica de C++ con datos de inventarios.</span></li>
+                    <li><input type="checkbox"> <span>Identificar internamente en LKQ el nombre del software o bases de datos de catálogo que maneja el soporte de garantías.</span></li>
+                </ul>
+            </div>
         </div>
     </div>
 
+    <!-- ================= SCRIPT DE NAVEGACIÓN (JAVASCRIPT) ================= -->
     <script>
-        function toggleTask(card, event) {
-            // Evita que se dispare si se da click directamente en el checkbox
-            if (event.target.classList.contains('checkbox')) return;
-            card.classList.toggle('active');
+        function navegarA(pantallaId) {
+            // Oculta el panel principal
+            document.getElementById('panel-inicio').style.display = 'none';
+            // Muestra el roadmap seleccionado
+            document.getElementById(pantallaId).style.display = 'block';
+            window.scrollTo(0, 0);
         }
 
-        function toggleCheck(checkbox, event) {
-            event.stopPropagation();
-            const item = checkbox.closest('.task-item');
-            item.classList.toggle('completed');
+        function volverAlPanel(pantallaId) {
+            // Oculta el roadmap activo
+            document.getElementById(pantallaId).style.display = 'none';
+            // Vuelve a encender el menú principal
+            document.getElementById('panel-inicio').style.display = 'grid';
         }
     </script>
 </body>
