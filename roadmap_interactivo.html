@@ -278,7 +278,7 @@
 
   
     <!-- ================= LÓGICA EN JAVASCRIPT ================= -->
-    <script>
+     <script>
         // 1. Funciones de Navegación entre Pantallas
         function navegarA(pantallaId) {
             document.getElementById('pantalla-principal').style.display = 'none';
@@ -291,7 +291,7 @@
             document.getElementById('pantalla-principal').style.display = 'block';
         }
 
-        // 2. Función para agregar elementos individuales (li) a las listas
+        // 2. Función modificada para agregar elementos individuales (li) editables y eliminables
         function agregarElementoLista(listaId, inputId) {
             let input = document.getElementById(inputId);
             let texto = input.value.trim();
@@ -299,13 +299,23 @@
 
             let lista = document.getElementById(listaId);
             let nuevoLi = document.createElement("li");
-            nuevoLi.innerHTML = `<input type="checkbox"> <span>${texto}</span>`;
+            nuevoLi.style.justifyContent = "space-between";
+            nuevoLi.style.alignItems = "center";
+            
+            // contenteditable="true" permite modificar el texto directamente haciendo clic
+            nuevoLi.innerHTML = `
+                <div style="display: flex; align-items: flex-start; flex: 1;">
+                    <input type="checkbox" style="margin-right: 12px; margin-top: 4px;">
+                    <span contenteditable="true" style="outline: none; flex: 1;">${texto}</span>
+                </div>
+                <button onclick="this.closest('li').remove()" style="background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0 5px;">🗑️</button>
+            `;
             
             lista.appendChild(nuevoLi);
             input.value = ""; 
         }
 
-        // 3. Función avanzada para generar Categorías Dinámicas Completas
+        // 3. Función avanzada modificada para generar Categorías Dinámicas y Editables
         function agregarCategoria() {
             let inputCat = document.getElementById("inputNuevaCategoria");
             let nombreCat = inputCat.value.trim();
@@ -315,18 +325,23 @@
             let idListaUnica = "lista-" + idUnico;
             let idInputUnico = "input-" + idUnico;
 
-            // PARTE A: Crear tarjeta en interfaz principal
+            // PARTE A: Crear tarjeta en interfaz principal con textos editables
             let panelInicio = document.getElementById("panel-inicio");
             let nuevoBoton = document.createElement("div");
             nuevoBoton.className = "panel-boton";
-            nuevoBoton.onclick = function() { navegarA(idUnico); }; 
+            nuevoBoton.style.position = "relative";
+            
+            // Agregamos estructura interna donde los textos se pueden editar in-situ con el teclado
             nuevoBoton.innerHTML = `
-                <h3>${nombreCat}</h3>
-                <p>Categoría personalizada agregada por ti.</p>
+                <div onclick="if(!event.target.hasAttribute('contenteditable')) navegarA('${idUnico}')">
+                    <h3 contenteditable="true" style="outline: none; display: inline-block; width: 100%;" onclick="event.stopPropagation()">${nombreCat}</h3>
+                    <p contenteditable="true" style="outline: none; display: inline-block; width: 100%;" onclick="event.stopPropagation()">Haz clic para editar esta descripción.</p>
+                </div>
+                <button onclick="event.stopPropagation(); this.closest('.panel-boton').remove(); document.getElementById('${idUnico}').remove();" style="position: absolute; top: 10px; right: 10px; background: none; border: none; cursor: pointer; font-size: 1rem;">🗑️</button>
             `;
             panelInicio.appendChild(nuevoBoton);
 
-            // PARTE B: Crear la estructura de la nueva pantalla
+            // PARTE B: Crear la estructura de la nueva pantalla del Roadmap
             let contenedorRoadmaps = document.getElementById("contenedor-roadmaps-dinamicos");
             let nuevaSeccion = document.createElement("div");
             nuevaSeccion.id = idUnico;
@@ -335,7 +350,7 @@
             nuevaSeccion.innerHTML = `
                 <div class="header-roadmap">
                     <button class="btn-regresar" onclick="volverAlPanel('${idUnico}')">⬅️ Volver</button>
-                    <h2>${nombreCat}</h2>
+                    <h2 contenteditable="true" style="outline: none;">${nombreCat}</h2>
                 </div>
                 <div class="creador-contenedor">
                     <input type="text" id="${idInputUnico}" placeholder="Agregar elemento a esta lista...">
@@ -343,7 +358,13 @@
                 </div>
                 <div class="fase">
                     <ul id="${idListaUnica}">
-                        <li><input type="checkbox"> <span>¡Primera tarea de tu nueva rama!</span></li>
+                        <li style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: flex-start; flex: 1;">
+                                <input type="checkbox" style="margin-right: 12px; margin-top: 4px;">
+                                <span contenteditable="true" style="outline: none; flex: 1;">¡Primera tarea editable! Haz clic directo aquí para modificar el texto.</span>
+                            </div>
+                            <button onclick="this.closest('li').remove()" style="background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0 5px;">🗑️</button>
+                        </li>
                     </ul>
                 </div>
             `;
@@ -351,6 +372,46 @@
 
             inputCat.value = "";
         }
+
+        // Habilitar eliminación en los tres bloques iniciales estáticos del HTML original
+        document.querySelectorAll('#contenedor-roadmaps-dinamicos li').forEach(li => {
+            li.style.justifyContent = "space-between";
+            li.style.alignItems = "center";
+            
+            let span = li.querySelector('span');
+            if(span) span.setAttribute('contenteditable', 'true');
+            
+            let btnEliminar = document.createElement('button');
+            btnEliminar.innerHTML = '🗑️';
+            btnEliminar.style.cssText = 'background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0 5px;';
+            btnEliminar.onclick = function() { this.closest('li').remove(); };
+            li.appendChild(btnEliminar);
+        });
+
+        // Habilitar edición de títulos y descripciones en las tres tarjetas base
+        document.querySelectorAll('#panel-inicio .panel-boton').forEach((boton, index) => {
+            let h3 = boton.querySelector('h3');
+            let p = boton.querySelector('p');
+            let idsOriginales = ['roadmap-agenda', 'roadmap-uanl', 'roadmap-lkq'];
+            
+            if(h3) {
+                h3.setAttribute('contenteditable', 'true');
+                h3.style.outline = 'none';
+                h3.onclick = function(e) { e.stopPropagation(); };
+            }
+            if(p) {
+                p.setAttribute('contenteditable', 'true');
+                p.style.outline = 'none';
+                p.onclick = function(e) { e.stopPropagation(); };
+            }
+            
+            // Permitir navegación solo si no se hace clic sobre el texto editable
+            boton.onclick = function(e) {
+                if(!e.target.hasAttribute('contenteditable')) {
+                    navegarA(idsOriginales[index]);
+                }
+            };
+        });
     </script>
 </body>
 </html>
